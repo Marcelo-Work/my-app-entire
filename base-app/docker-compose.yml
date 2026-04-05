@@ -14,6 +14,11 @@ services:
       sh -c "pip install -q -r requirements.txt &&
              python manage.py migrate --noinput &&
              echo 'Database initialized'"
+    healthcheck:
+      test: ["CMD-SHELL", "python manage.py check || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - digimart-net
 
@@ -47,7 +52,7 @@ services:
       - digimart-net
     depends_on:
       db-init:
-        condition: service_completed_successfully
+        condition: service_healthy
 
   frontend:
     build:
