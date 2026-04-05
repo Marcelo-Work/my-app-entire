@@ -35,11 +35,7 @@ from .tasks import send_order_confirmation_email
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def health_check(request):
-    return Response({
-        "status": "healthy",
-        "service": "digimart-cedar",
-        "timestamp": "2026-04-02T12:00:00Z" # Optional static time or use datetime.now()
-    })
+    return Response({"status": "healthy"})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):

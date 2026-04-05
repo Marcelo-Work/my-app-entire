@@ -24,7 +24,7 @@ services:
       - DATABASE_URL=sqlite:///db/private.sqlite3
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend-private,frontend-private
       - CORS_ALLOWED_ORIGINS=http://localhost:5174,http://frontend-private:80
-      - SEED_DATA=False # We manually seed in command
+      - SEED_MODE=private
     command: >
       sh -c "python manage.py migrate --noinput &&
              python evaluation/scripts/seed_private.py &&
@@ -55,6 +55,7 @@ services:
     environment:
       - VITE_API_BASE_URL=http://localhost:3001/api
       - VITE_APP_ENV=private-test
+      - SEED_MODE=private
     command: npm run dev -- --host 0.0.0.0 --port 5173
     networks:
       - digimart-private-net
@@ -76,6 +77,7 @@ services:
     environment:
       - PLAYWRIGHT_BROWSERS_PATH=0
       - VITE_API_BASE_URL=http://backend-private:3000/api
+      - SEED_MODE=private
     command: >
       sh -c "sleep 10 &&
              npx playwright test evaluation/private-test-cases/ --reporter=list"

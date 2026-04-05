@@ -1,11 +1,11 @@
 {
   "family": "digimart-prod-task",
-  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
-  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "2048",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
@@ -15,27 +15,11 @@
       "name": "db",
       "image": "postgres:15-alpine",
       "essential": true,
-      "cpu": 256,
-      "memory": 512,
-      "portMappings": [
-        {
-          "containerPort": 5432,
-          "hostPort": 5432,
-          "protocol": "tcp"
-        }
-      ],
-      "environment": [
-        { "name": "DB_HOST", "value": "localhost" },
-        { "name": "POSTGRES_DB", "value": "digimart" },
-        { "name": "POSTGRES_USER", "value": "user" },
-        { "name": "POSTGRES_PASSWORD", "value": "password" }
-      ],
       "healthCheck": {
         "command": ["CMD-SHELL", "pg_isready -U user -d digimart"],
         "interval": 10,
         "timeout": 5,
-        "retries": 5,
-        "startPeriod": 10
+        "retries": 5
       }
     },
     {
@@ -44,20 +28,12 @@
       "cpu": 512,
       "memory": 1024,
       "essential": true,
-      "portMappings": [
-        {
-          "containerPort": 3000,
-          "hostPort": 3000,
-          "protocol": "tcp"
-        }
-      ],
+      "portMappings": [{"containerPort": 3000, "hostPort": 3000, "protocol": "tcp"}],
       "environment": [
-        { "name": "DEBUG", "value": "0" },
-        { "name": "DATABASE_URL", "value": "postgresql://user:password@localhost:5432/digimart" }
+        {"name": "DEBUG", "value": "0"},
+        {"name": "DB_HOST", "value": "localhost"}
       ],
-      "dependsOn": [
-        { "containerName": "db", "condition": "HEALTHY" }
-      ],
+      "dependsOn": [{"containerName": "db", "condition": "HEALTHY"}],
       "healthCheck": {
         "command": ["CMD-SHELL", "curl -f http://localhost:3000/health/ || exit 1"],
         "interval": 30,
@@ -72,16 +48,8 @@
       "cpu": 256,
       "memory": 512,
       "essential": true,
-      "portMappings": [
-        {
-          "containerPort": 80,
-          "hostPort": 80,
-          "protocol": "tcp"
-        }
-      ],
-      "dependsOn": [
-        { "containerName": "backend", "condition": "HEALTHY" }
-      ],
+      "portMappings": [{"containerPort": 80, "hostPort": 80, "protocol": "tcp"}],
+      "dependsOn": [{"containerName": "backend", "condition": "HEALTHY"}],
       "healthCheck": {
         "command": ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"],
         "interval": 30,

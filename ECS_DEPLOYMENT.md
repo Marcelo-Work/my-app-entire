@@ -1,114 +1,40 @@
+# ECS Deployment Guide
 
-`docker-compose.yml` (Root)
+This document outlines the architecture, prerequisites, and steps to deploy the Digimart Cedar application to AWS ECS using Fargate.
 
-version: '3.8'
+## Architecture
 
-services:
-  # Django Backend API
-  backend:
-    build:
-      context: .
-      dockerfile: base-app/Dockerfile.backend
-    container_name: digimart-backend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./base-app/src/backend:/app
-      - ./base-app/src/backend/db:/app/db  # SQLite persistence
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-prod}
-      - DATABASE_URL=sqlite:///db/db.sqlite3
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
-      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://frontend:80
-      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-      - DEFAULT_FROM_EMAIL=noreply@digimart.local
-    command: >
-      sh -c "python manage.py makemigrate api
-             python manage.py migrate
-             python manage.py runserver 0.0.0.0:3000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - digimart-net
-    depends_on:
-      - db-init
+The application consists of three main components running in an ECS Task:
+1. **Database (PostgreSQL):** Managed container for data persistence.
+2. **Backend (Django):** Python API server handling business logic.
+3. **Frontend (Nginx):** Serves the compiled Svelte frontend.
 
-  # Svelte Frontend (Vite dev server)
-  frontend:
-    build:
-      context: .
-      dockerfile: base-app/Dockerfile.frontend.dev
-    container_name: digimart-frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./base-app/src/frontend:/app
-      - /app/node_modules  # Prevent host node_modules override
-    environment:
-      - VITE_API_BASE_URL=http://localhost:3000/api
-      - VITE_APP_ENV=development
-    command: npm run dev -- --host 0.0.0.0
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - digimart-net
-    depends_on:
-      - backend
+## Prerequisites
 
-  # Database initialization (SQLite doesn't need separate service, but this ensures migrations run)
-  db-init:
-    image: python:3.11-slim
-    container_name: digimart-db-init
-    volumes:
-      - ./base-app/src/backend:/app
-      - ./base-app/src/backend/db:/app/db
-    working_dir: /app
-    environment:
-      - DATABASE_URL=sqlite:///db/db.sqlite3
-    command: >
-      sh -c "pip install -q -r requirements.txt &&
-             python manage.py migrate --noinput &&
-             echo 'Database initialized'"
-    networks:
-      - digimart-net
+- AWS CLI configured
+- Docker installed locally
+- ECR repositories created
 
-  # Playwright test runner (optional)
-  playwright:
-    build:
-      context: .
-      dockerfile: base-app/Dockerfile.playwright
-    container_name: digimart-playwright
-    volumes:
-      - .:/app
-      - ./test-results:/app/test-results
-    environment:
-      - PLAYWRIGHT_BROWSERS_PATH=0
-      - VITE_API_BASE_URL=http://backend:3000/api
-    command: npx playwright test ${TEST_PATH:-tasks/test-cases/} --reporter=list
-    networks:
-      - digimart-net
-    depends_on:
-      - backend
-      - frontend
-    profiles:
-      - test
+## Deployment Steps
 
-networks:
-  digimart-net:
-    driver: bridge
+1. **Build and Push:** Run `./build-and-push-ecs.sh`.
+2. **Register Task:** Run `aws ecs register-task-definition --cli-input-json file://ecs-task-prod.json`.
+3. **Create Service:** Run the `aws ecs create-service` command.
 
-volumes:
-  node_modules:  
-    "@playwright/test": "^1.58.2",
-    "@sveltejs/vite-plugin-svelte": "3.1.0",
-    "svelte": "4.2.19",
-    "vite": "5.4.11"
+## Build and Push
+
+The script builds backend and frontend images and pushes them to ECR.
+
+## Register Task
+
+Registers the task definition defined in `ecs-task-prod.json`.
+
+## Troubleshooting
+
+- **Health Checks:** Check CloudWatch logs for migration errors.
+- **Permissions:** Verify IAM roles for ECS.
+
+## Monitoring
+
+- Use CloudWatch Logs for container output.
+- Monitor CPU/Memory in the ECS Console.
