@@ -40,7 +40,6 @@ urlpatterns = [
     path('contact/', ContactSupportView.as_view(), name='contact-support'),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart/validate-coupon/', validate_coupon_view, name='validate-coupon'),
-    path('cart/apply-coupon/', CartView.as_view(), name='apply-coupon'),
     path('products/<int:pk>/', product_detail_with_reviews, name='product-detail'),
     path('guest/checkout/', GuestCheckoutView.as_view(), name='guest-checkout'),
     path('guest/order/<uuid:token>/', GuestOrderLookupView.as_view(), name='guest-lookup'),
