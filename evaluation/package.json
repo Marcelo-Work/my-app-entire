@@ -1,0 +1,21 @@
+{
+  "name": "digimart-cedar",
+  "version": "1.0.0",
+  "description": "DigiMart - Digital Goods Marketplace",
+  "main": "index.js",
+  "scripts": {
+    "test:public": "playwright test tasks/test-cases/ --config=playwright.config.ts",
+    "test:private": "playwright test evaluation/private-test-cases/ --config=playwright.config.ts",
+    "test:debug": "playwright test --debug --config=playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2"
+  },
+  "dependencies": {
+    "bootstrap": "5.3.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
