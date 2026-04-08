@@ -34,10 +34,9 @@ from .tasks import send_order_confirmation_email
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-# def health_check(request):
-#     return Response({"status": "healthy"})
 
-def healthcheck(request):
+
+def health_check(request):
     return Response({"status": "healthy"})
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):

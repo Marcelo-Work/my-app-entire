@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    health_check,
     search_products,
     user_avatar_view, 
     ContactSupportView,
@@ -19,7 +18,8 @@ from .views import (
     GuestOrderLookupView,
     product_recommendations,
     product_detail_with_reviews,
-    validate_coupon_view
+    validate_coupon_view,
+    health_check,
     
 )
 
